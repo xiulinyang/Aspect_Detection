@@ -1,5 +1,6 @@
 import argparse
 import json
+
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -10,6 +11,7 @@ from transformers import BertTokenizerFast, BertConfig, BertForTokenClassificati
 from torch import cuda
 from seqeval.metrics import classification_report
 from ner import *
+from Evaluation import *
 # from sklearn.metrics import classification_report
 device = 'cuda' if cuda.is_available() else 'cpu'
 
@@ -42,7 +44,7 @@ def inference(test_data, model, tokenizer, ids_to_labels,config):
 
         prediction = []
         for token_pred, mapping in zip(wp_preds, inputs["offset_mapping"].squeeze().tolist()):
-            print(token_pred, mapping)
+            # print(token_pred, mapping)
             #only predictions on first word pieces are important
             if mapping[0] == 0 and mapping[1] != 0:
                 prediction.append(token_pred[1])
@@ -91,7 +93,7 @@ def get_aspect(truth_tokens, total_idx):
             for idx in total_idx[i]:  
                 if len(idx.keys()) > 0:
                     token_idx = list(idx.values())[-1]
-                    print(token_idx)
+                    # print(token_idx)
                     if len(token_idx) == 1:
                         aspect.append(truth_tokens[i][token_idx[0]])
                     else:
@@ -104,11 +106,14 @@ def get_aspect(truth_tokens, total_idx):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_path', type = str, help='Path to train data.', default='tagged_ner_test.json')
-    parser.add_argument('--model_dir', type = str, help='Path to Pretrained model', default = 'Models_1.0')
+    parser.add_argument('--test_path', type = str, help='Path to train data.', default='Data/tagged_ner_test.json')
+    parser.add_argument('--model_dir', type = str, help='Path to Pretrained model', default = './Models/Models_2.1')
+    parser.add_argument('--score', type = str, help='Path to result.', default='bert')
     args = parser.parse_args()
 
     model_dir = args.model_dir
+    test_path = args.test_path
+    score = args.score
     # Load a trained model and vocabulary that you have fine-tuned
     model = BertForTokenClassification.from_pretrained(model_dir)
     tokenizer = BertTokenizerFast.from_pretrained(model_dir)
@@ -116,19 +121,19 @@ def main():
 
     config =  {
     'MAX_LEN' : 128,
-    'TEST_BATCH_SIZE': 32,
+    'TEST_BATCH_SIZE': 16,
     }
 
 
 
-    test_data = pd.read_json('./tagged_ner_test.json')
+    test_data = pd.read_json(test_path)
 
     labels_to_ids, ids_to_labels = label_ids(test_data)
 
     test_set = dataset(test_data, tokenizer, config['MAX_LEN'], labels_to_ids)
 
 
-    test_parms = {'batch_size': config['TRAIN_BATCH_SIZE'],
+    test_parms = {'batch_size': config['TEST_BATCH_SIZE'],
                 'shuffle': True,
                 'num_workers': 0
                 }
@@ -136,7 +141,7 @@ def main():
 
     test_loader = DataLoader(test_set, **test_parms)
 
-    eval_loss, eval_accuracy = valid(model, test_loader)
+    eval_loss, eval_accuracy = valid(model, test_loader, ids_to_labels)
 
     truth_tokens, predictions = inference(test_data, model, tokenizer, ids_to_labels, config)
 
@@ -144,12 +149,34 @@ def main():
 
     pred_aspect = get_aspect(truth_tokens, token_index)
 
-    with open('pred_aspect.txt', 'w') as f:
-        for asp in pred_aspect:
-            f.write(asp)
-            f.write("\n")
+    pred_aspect = [','.join(asp_list) for asp_list in pred_aspect]
+
+
+    true_aspect = test_data['aspects']
+
+    true_aspect = [','.join(asp) for asp in true_aspect]
+
+    # print(pred_aspect[:20],true_aspect[:10])
+
+    # d = {"predictions":pred_aspect,
+    #     "references": true_aspect}
+
+    
+
+    # with open(output_file, 'w') as f:
+    #     json.dump(d, f)
+
+
+    if score =='bleu':
+       score = get_bleu_score(pred_aspect, true_aspect) 
+    elif score == 'bert':
+        score = get_bert_score(pred_aspect, true_aspect)
+    else:
+        print("Invalid Score Argument")
         
-        f.close()
+if __name__ == '__main__':
+    main()
+    
 
 
 
