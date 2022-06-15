@@ -47,7 +47,7 @@ There are two options for Pretrained Models: BERT-large and BERT-base. By defaul
   --model, default = 'base'
   --epoch, default = 5
  ```
-  ** Example:**
+  **Example:**
  ```
  python ner.py --model base --output_dir Models 
  
@@ -55,14 +55,14 @@ There are two options for Pretrained Models: BERT-large and BERT-base. By defaul
  <p align="right">(<a href="#top">back to top</a>)</p>
  
  ### Inference
- To evaluate our model, we request you to download pretrained models from [here](https://drive.google.com/drive/folders/1ZK7jlUbwODJbpCS74mPiUIT6PQjcAyNv?usp=sharing). We found best score using *Model_1* therefore we suggest it for best results. Also we used two evaluation approches: [BLEU](https://github.com/mjpost/sacrebleu) and [BERTScore](https://github.com/Tiiiger/bert_score). We can choose a type *bert* or *bleu* by using `--score` argument. Also you can choose following arguments:
+ To evaluate our model, we request you to download pretrained models from [here](https://drive.google.com/drive/folders/1ZK7jlUbwODJbpCS74mPiUIT6PQjcAyNv?usp=sharing). We found best score using *Model_1* therefore we suggest it for best results. Also we used two evaluation approches: [BLEU](https://github.com/mjpost/sacrebleu) and [BERTScore](https://github.com/Tiiiger/bert_score). One can choose a type *bert* or *bleu* by using `--score` argument. Also you can choose following arguments:
  
  ```
 --test_path, help='Path to train data.', default='Data/tagged_ner_test.json'
 --model_dir, help='Path to Pretrained model', default = './Models/Models_2.1'
 --score, type = str, help='Path to result.', default='bert'
  ```
- ** Example:**
+ **Example:**
  ```
 python ner_inference.py --test_path Data/tagged_ner_test.json --Models/Models_1 --score bert
  
