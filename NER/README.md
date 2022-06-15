@@ -38,7 +38,7 @@ pip install -r requirements.txt
 <!-- USAGE -->
 ## Usage
 ### Train Model
-There are two options for Pretrained Models: BERT-large and BERT-base. By default we used BERT-base model. You can choose model type *base* or *large* using `--model large` argument. Also we include the following arguments:
+There are two options for Pretrained Models: BERT-large and BERT-base. By default we used BERT-base model. You can choose model type *base* or *large* using `--model` argument. Also we include the following arguments:
 
 ```
   --train_path, default='Data/tagged_ner_train.json
