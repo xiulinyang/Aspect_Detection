@@ -217,16 +217,19 @@ def load_data(train_path, val_path):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--train_path', type = str, help='Path to train data.', default='tagged_ner_train.json')
-  parser.add_argument('--val_path', type = str, help='Path to validation data.', default='tagged_ner_dev.json')
+  parser.add_argument('--train_path', type = str, help='Path to train data.', default='Data/tagged_ner_train.json')
+  parser.add_argument('--val_path', type = str, help='Path to validation data.', default='Data/tagged_ner_dev.json')
   parser.add_argument('--output_dir',type = str , help='Path to save model', default = 'Models')
-  parser.add_argument('--model', type = str, help='Path to Pretrained model', default = 'Models')
+  parser.add_argument('--model', type = str, help='Choose a Pretrained model', default = 'base')
+  parser.add_argument('--epoch', type = int, help='Number of epoch', default = 5)
   args = parser.parse_args()
-  train_path = 'tagged_ner_train.json'
-  val_path = 'tagged_ner_dev.json'
-  output_dir = 'Models_2.1'
-  model = 'bert-base-uncased'
-  
+  train_path = args.train_path
+  val_path = args.val_path
+  output_dir = args.output_dir
+  if args.model=='base':
+    model = 'bert-base-uncased'
+  else:
+    model = 'bert-large-uncased'
 
   
 
