@@ -1,0 +1,7 @@
+transformers==4.19.2
+nltk==3.7
+torch
+pandas
+sklearn
+sacrebleu
+bert_score
