@@ -107,8 +107,8 @@ def get_aspect(truth_tokens, total_idx):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_path', type = str, help='Path to train data.', default='Data/tagged_ner_test.json')
-    parser.add_argument('--model_dir', type = str, help='Path to Pretrained model', default = './Models/Models_2.1')
-    parser.add_argument('--score', type = str, help='Path to result.', default='bert')
+    parser.add_argument('--model_dir', type = str, help='Path to Pretrained model', default = './Models/Models_2.2')
+    parser.add_argument('--score', type = str, help='Path to result.', default='bleu')
     args = parser.parse_args()
 
     model_dir = args.model_dir

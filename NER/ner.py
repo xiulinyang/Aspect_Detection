@@ -6,14 +6,17 @@ from tqdm import tqdm
 from sklearn.metrics import accuracy_score
 import torch
 from torch.utils.data import Dataset, DataLoader
-from transformers import BertTokenizerFast, BertConfig, BertForTokenClassification
+from transformers import BertTokenizer, BertTokenizerFast, BertForTokenClassification
 from torch import cuda
 from seqeval.metrics import classification_report
+import matplotlib.pyplot as plt
+
+
+import seaborn as sns
 # from sklearn.metrics import classification_report
+torch.cuda.empty_cache()
+
 device = 'cuda' if cuda.is_available() else 'cpu'
-
-
-
 
 def label_ids(df):
   total_tags = []
@@ -50,13 +53,15 @@ class dataset(Dataset):
                              padding='max_length', 
                              truncation=True, 
                              max_length=self.max_len)
-        # print(encoding)
+
         
         # step 3: create token labels only for first word pieces of each tokenized word
-        labels = [self.labels_to_ids[label] for label in word_labels] 
+        labels = [self.labels_to_ids[label] for label in word_labels]
+
         # code based on https://huggingface.co/transformers/custom_datasets.html#tok-ner
         # create an empty array of -100 of length max_length
         encoded_labels = np.ones(len(encoding["offset_mapping"]), dtype=int) * -100
+        
         
         # set only labels whose first offset position is 0 and the second is not 0
         i = 0
@@ -65,6 +70,7 @@ class dataset(Dataset):
             # overwrite label
             encoded_labels[idx] = labels[i]
             i += 1
+
 
         # step 4: turn everything into PyTorch tensors
         item = {key: torch.as_tensor(val) for key, val in encoding.items()}
@@ -129,8 +135,8 @@ def valid(model, valid_loader, ids_to_labels):
     eval_accuracy = eval_accuracy / nb_eval_steps
     print(f"Validation Loss: {eval_loss}")
     print(f"Validation Accuracy: {eval_accuracy}")
-    print(len(labels))
-    print(len(predictions))
+    # print(len(labels))
+    # print(len(predictions))
 
 
     print(classification_report([labels], [predictions]))
@@ -138,71 +144,88 @@ def valid(model, valid_loader, ids_to_labels):
     return eval_loss, eval_accuracy
 
 # Defining the training function on the 80% of the dataset for tuning the bert model
-def train(model, train_loader, valid_loader, optimizer, tokenizer, ids_to_labels, output_dir, config):
+def train(model, train_loader, valid_loader, optimizer, tokenizer, output_dir, config, ids_to_labels):
     valid_acc = 0
     tr_loss, tr_accuracy = 0, 0
     nb_tr_examples, nb_tr_steps = 0, 0
     tr_preds, tr_labels = [], []
+    training_stats = []
     # put model in training mode
     model.train()
-    
+    patience = 0
     for i in range(config['EPOCHS']):
-      for idx, batch in tqdm(enumerate(train_loader)):
-        
-        ids = batch['input_ids'].to(device, dtype = torch.long)
-        mask = batch['attention_mask'].to(device, dtype = torch.long)
-        labels = batch['labels'].to(device, dtype = torch.long)
+      if patience <= config['PATIENCE']:
+        for idx, batch in tqdm(enumerate(train_loader)):
+          ids = batch['input_ids'].to(device, dtype = torch.long)
+          mask = batch['attention_mask'].to(device, dtype = torch.long)
+          labels = batch['labels'].to(device, dtype = torch.long)
 
-        outputs = model(input_ids=ids, attention_mask=mask, labels=labels)
-        loss, tr_logits = outputs[0], outputs[1]
-        tr_loss += loss.item()
+          outputs = model(input_ids=ids, attention_mask=mask, labels=labels)
+          loss, tr_logits = outputs[0], outputs[1]
+          tr_loss += loss.item()
 
-        nb_tr_steps += 1
-        nb_tr_examples += labels.size(0)
-        
-           
-        # compute training accuracy
-        flattened_targets = labels.view(-1) # shape (batch_size * seq_len,)
-        active_logits = tr_logits.view(-1, model.num_labels) # shape (batch_size * seq_len, num_labels)
-        flattened_predictions = torch.argmax(active_logits, axis=1) # shape (batch_size * seq_len,)
-        
-        # only compute accuracy at active labels
-        active_accuracy = labels.view(-1) != -100 # shape (batch_size, seq_len)
-        #active_labels = torch.where(active_accuracy, labels.view(-1), torch.tensor(-100).type_as(labels))
-        
-        labels = torch.masked_select(flattened_targets, active_accuracy)
-        predictions = torch.masked_select(flattened_predictions, active_accuracy)
-        
-        tr_labels.extend(labels)
-        tr_preds.extend(predictions)
+          nb_tr_steps += 1
+          nb_tr_examples += labels.size(0)
+          
+            
+          # compute training accuracy
+          flattened_targets = labels.view(-1) # shape (batch_size * seq_len,)
+          active_logits = tr_logits.view(-1, model.num_labels) # shape (batch_size * seq_len, num_labels)
+          flattened_predictions = torch.argmax(active_logits, axis=1) # shape (batch_size * seq_len,)
+          
+          # only compute accuracy at active labels
+          active_accuracy = labels.view(-1) != -100 # shape (batch_size, seq_len)
+          #active_labels = torch.where(active_accuracy, labels.view(-1), torch.tensor(-100).type_as(labels))
+          
+          labels = torch.masked_select(flattened_targets, active_accuracy)
+          predictions = torch.masked_select(flattened_predictions, active_accuracy)
+          
+          tr_labels.extend(labels)
+          tr_preds.extend(predictions)
 
-        tmp_tr_accuracy = accuracy_score(labels.cpu().numpy(), predictions.cpu().numpy())
-        tr_accuracy += tmp_tr_accuracy
-    
-        # gradient clipping
-        torch.nn.utils.clip_grad_norm_(
-            parameters=model.parameters(), max_norm=config['MAX_GRAD_NORM']
+          tmp_tr_accuracy = accuracy_score(labels.cpu().numpy(), predictions.cpu().numpy())
+          tr_accuracy += tmp_tr_accuracy
+      
+          # gradient clipping
+          torch.nn.utils.clip_grad_norm_(
+              parameters=model.parameters(), max_norm=config['MAX_GRAD_NORM']
+          )
+          
+          # backward pass
+          optimizer.zero_grad()
+          loss.backward()
+          optimizer.step()
+
+        epoch_loss = tr_loss / nb_tr_steps
+        tr_accuracy = tr_accuracy / nb_tr_steps
+        print(f"Training loss epoch: {epoch_loss}")
+        print(f"Training accuracy epoch: {tr_accuracy}")
+
+        eval_loss, eval_accuracy = valid(model, valid_loader, ids_to_labels)
+        patience += 1
+
+        if valid_acc < eval_accuracy:
+          patience = 0
+          valid_acc = eval_accuracy
+          print('Saving Model')
+          model.save_pretrained(output_dir)
+          tokenizer.save_pretrained(output_dir)
+
+
+            # Record all statistics from this epoch.
+        training_stats.append(
+            {
+                'epoch': i + 1,
+                'Training Loss': epoch_loss,
+                'Valid. Loss': eval_loss,
+                'Valid. Accur.': eval_accuracy
+            }
         )
-        
-        # backward pass
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+      else:
+        print("Early Stopping")
+        break
 
-      epoch_loss = tr_loss / nb_tr_steps
-      tr_accuracy = tr_accuracy / nb_tr_steps
-      print(f"Training loss epoch: {epoch_loss}")
-      print(f"Training accuracy epoch: {tr_accuracy}")
-
-      eval_loss, eval_accuracy = valid(model, valid_loader, ids_to_labels)
-
-      if valid_acc < eval_accuracy:
-        valid_acc = eval_accuracy
-        print('Saving Model')
-        model.save_pretrained(output_dir)
-        tokenizer.save_pretrained(output_dir)
-
-    return model
+    return model, training_stats
 
 
 
@@ -213,6 +236,31 @@ def load_data(train_path, val_path):
   val_data = pd.read_json(val_path)
   print(len(train_data), len(val_data))
   return train_data, val_data
+
+
+
+
+
+def plot_history(df_stats):
+  # Use plot styling from seaborn.
+  sns.set(style='darkgrid')
+
+  # Increase the plot size and font size.
+  sns.set(font_scale=1.5)
+  plt.rcParams["figure.figsize"] = (12,6)
+
+  # Plot the learning curve.
+  plt.plot(df_stats['Training Loss'], 'b-o', label="Training")
+  plt.plot(df_stats['Valid. Loss'], 'g-o', label="Validation")
+
+  # Label the plot.
+  plt.title("Training & Validation Loss")
+  plt.xlabel("Epoch")
+  plt.ylabel("Loss")
+  plt.legend()
+  plt.xticks([1, 2, 3, 4])
+
+  plt.show()
 
 
 def main():
@@ -239,7 +287,8 @@ def main():
     'VALID_BATCH_SIZE' : 32,
     'EPOCHS' : 5,
     'LEARNING_RATE' : 3e-05,
-    'MAX_GRAD_NORM' : 10
+    'MAX_GRAD_NORM' : 10,
+    'PATIENCE': 3
  
   }
   tokenizer = BertTokenizerFast.from_pretrained(model)
@@ -269,21 +318,19 @@ def main():
 
   optimizer = torch.optim.Adam(params=model.parameters(), lr=config['LEARNING_RATE'])
 
-  train(model, train_loader, valid_loader, optimizer, tokenizer, labels_to_ids, output_dir, config)
+  model, training_stats = train(model, train_loader, valid_loader, optimizer, tokenizer, output_dir, config, ids_to_labels)
 
-  # inputs = training_set[2]
-  # print(inputs)
-  # input_ids = inputs["input_ids"].unsqueeze(0)
-  # attention_mask = inputs["attention_mask"].unsqueeze(0)
-  # labels = inputs["labels"].unsqueeze(0)
+  # Display floats with two decimal places.
+  pd.set_option('precision', 2)
 
-  # input_ids = input_ids.to(device)
-  # attention_mask = attention_mask.to(device)
-  # labels = labels.to(device)
+  # Create a DataFrame from our training statistics.
+  df_stats = pd.DataFrame(data=training_stats)
 
-  # outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
-  # initial_loss = outputs[0]
-  # print(initial_loss)
+  # Use the 'epoch' as the row index.
+  df_stats = df_stats.set_index('epoch')
+
+
+  plot_history(df_stats)
 
 
 
