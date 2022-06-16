@@ -174,6 +174,8 @@ def main():
     else:
         print("Invalid Score Argument")
         
+    print(score)
+        
 if __name__ == '__main__':
     main()
     
