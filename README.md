@@ -3,7 +3,7 @@ This is the group project for the course Language Technology Project.
 
 ## Description
 
-In this project, we experimented with four different prompt-related strategies as shown in the four folders. 
+In this project, we experimented with four different prompt-related strategies for aspect detection. You can find the scripts about those four methods in the corresponding folders. 
 
 ## Getting Started
 
