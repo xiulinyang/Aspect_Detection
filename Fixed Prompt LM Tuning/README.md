@@ -20,7 +20,7 @@
 <!-- GETTING STARTED -->
 ## Getting Started
 
-Aspect Detection as Named Entity Recognition without using any Prompt. We fine tuned [BERT](https://arxiv.org/abs/1810.04805) pretrained model for token classification.
+We tried the fixed prompt LM tuning method and took aspect detection as a text generation task.
 ### Prerequisites
 
 Python == 3.8
@@ -66,7 +66,7 @@ There are two options for Pretrained Models: BERT-large and BERT-base. By defaul
  ```
  **Example:**
  ```
-python inference_generation.py --test_path Data/test.jsonl --model_dir/Model_generation --score bert --model_name gptneo
+python inference_generation.py --test_path Data/test.jsonl --model_dir/Model_generation --score bert --model_name gptneo --number_prompt 1
  
  ```
  
