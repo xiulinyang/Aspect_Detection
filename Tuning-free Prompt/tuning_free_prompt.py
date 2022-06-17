@@ -106,7 +106,11 @@ def get_bert_score(pred, test):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--model_name", type=str, help="Options: 'neo' for GPT-neo & 'gpt2' for GPT-2")
+    parser.add_argument("--model_name", type=str, help="Options: 'neo' for GPT-neo & 'gpt2' for GPT-2", default="neo")
+    parser.add_argument("--train_path", type=str, help="path to train jsonl file", default="data/train.jsonl")
+    parser.add_argument("--test_path", type=str, help="path to test jsonl file", default="data/test.jsonl")
+    parser.add_argument("--n_gen", type=int, help="number of text generations", default=15)
+
     args = parser.parse_args()
 
     if args.model_name == "neo":
@@ -128,14 +132,14 @@ if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
 
-    train_df = pd.read_json('data/train.jsonl', lines=True)
-    test_df = pd.read_json("data/test.jsonl", lines=True)
+    train_df = pd.read_json(args.train_path, lines=True)
+    test_df = pd.read_json(args.test_path, lines=True)
     test_dt, test_aspects, test_sentence = promptLoader(train_df, test_df)
 
     print("Dataset loaded...")
     bleu = []
     bert = []
-    n_gen = 15
+    n_gen = args.n_gen
 
     pred_aspects = []
 
