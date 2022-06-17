@@ -44,7 +44,7 @@ There are two options for Pretrained Models: GPT-2 and GPT-Neo. You can choose m
   --train_path, default='Data/train.jsonl
   --val_path, default='Data/dev.jsonl
   --output_dir, default = 'model1'
-  --model, default = 'gpt2'
+  --model, default = 'gpt2', choices = 'gpt2' or 'gptneo'
   --epoch, default = 5
  ```
   **Example:**
@@ -62,7 +62,7 @@ To evaluate our model, we request you to download pretrained models ```generatio
 --model_dir, Path to Pretrained model
 --score, evaluation method including bert and bleu, default='bleu'
 --number_prompt,the number of prompt preceding the test sentence, default=3
---model_name, The name of the LM including gpt2 and gptneo, default='gpt2'
+--model_name, The name of the LM including gpt2 and gptneo, default='gpt2', choices ='gpt2' or 'gptneo'
  ```
  **Example:**
  ```
