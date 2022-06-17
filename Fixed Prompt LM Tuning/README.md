@@ -55,7 +55,7 @@ There are two options for Pretrained Models: GPT-2 and GPT-Neo. You can choose m
  <p align="right">(<a href="#top">back to top</a>)</p>
  
  ### Inference
-To evaluate our model, we request you to download pretrained models ```generation_gpt2``` and ```generation_gptneo``` from [here](https://drive.google.com/drive/folders/1ZK7jlUbwODJbpCS74mPiUIT6PQjcAyNv?usp=sharing). We used two evaluation approches: [BLEU](https://github.com/mjpost/sacrebleu) and [BERTScore](https://github.com/Tiiiger/bert_score). One can choose a type *bert* or *bleu* by using `--score` argument. Also you can choose following arguments:
+To evaluate our model, we request you to download pretrained models ```generation_gpt2``` and ```generation_gptneo``` from [here]([https://drive.google.com/drive/folders/1ZK7jlUbwODJbpCS74mPiUIT6PQjcAyNv?usp=sharing](https://drive.google.com/drive/folders/1oBXWTrbu2BWYmQQmkufDSVncH2iEzlVy)). We used two evaluation approches: [BLEU](https://github.com/mjpost/sacrebleu) and [BERTScore](https://github.com/Tiiiger/bert_score). One can choose a type *bert* or *bleu* by using `--score` argument. Also you can choose following arguments:
  
  ```
 --test_path, Path to test, default='Data/test.jsonl'
