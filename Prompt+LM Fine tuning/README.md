@@ -20,7 +20,7 @@
 <!-- GETTING STARTED -->
 ## Getting Started
 
-Tuning-Free prompt learning using GPT-2 and GPT-neo as Language models with custom templates.
+Prompt tuning with soft prompts using GPT-2 and GPT-neo as Language models with custom templates.
 ### Prerequisites
 
 Python == 3.8
@@ -53,7 +53,7 @@ There are two options for Pretrained Models: GPT-2 and GPT-neo. You can choose m
  ```
   **Training Example:**
  ```
-python tuning_free_prompt.py --model_name "neo" --train_path "data/train.jsonl" --val_path "data/dev.jsonl" --batch_size 4 --epochs 20
+python prompt_tuning.py --model_name "neo" --train_path "data/train.jsonl" --val_path "data/dev.jsonl" --batch_size 4 --epochs 20
  
  ```
  
