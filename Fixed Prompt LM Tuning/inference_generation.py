@@ -85,7 +85,7 @@ def main():
     parser.add_argument('--model_dir', type = str, help='Path to Pretrained model')
     parser.add_argument('--score', type = str, help='evaluation method including bert and bleu.', default='bleu')
     parser.add_argument('--number_prompt', type=int, help ='the number of prompt preceding the test sentence', default=3)
-    parser.add_argument('--model_name', type=str, help='The name of the LM including gpt2 and gptneo', default='gpt2')
+    parser.add_argument('--model_name', type=str, help='The name of the LM including gpt2 and gptneo', default='gpt2', choices={'gpt2', 'gptneo'})
     args = parser.parse_args()
 
     model_dir = args.model_dir
@@ -100,8 +100,6 @@ def main():
     if model_name =='gptneo':
         model = GPTNeoForCausalLM.from_pretrained(model_dir)
         
-    else:
-        print('This language model is not available yet.')
     tokenizer =GPT2Tokenizer.from_pretrained('gpt2', bos_token='<startoftext>', eos_token ='<endoftext>', pad_token='<pad>')
     model.to(device='cuda')
     
