@@ -38,24 +38,24 @@ pip install -r requirements.txt
 <!-- USAGE -->
 ## Usage
 ### Train Model
-There are two options for Pretrained Models: BERT-large and BERT-base. By default we used BERT-base model. You can choose model type *base* or *large* using `--model` argument. Also we include the following arguments:
+There are two options for Pretrained Models: GPT-2 and GPT-Neo. You can choose model type *GPT-2* or *GPT-Neo* using `--model` argument. Also we include the following arguments:
 
 ```
-  --train_path, default='Data/tagged_ner_train.json
-  --val_path, default='Data/tagged_ner_dev.json
-  --output_dir, default = 'Models'
-  --model, default = 'base'
+  --train_path, default='Data/train.jsonl
+  --val_path, default='Data/dev.jsonl
+  --output_dir, default = 'model1'
+  --model, default = 'gpt2'
   --epoch, default = 5
  ```
   **Example:**
  ```
- python ner.py --model base --output_dir Models 
+ python train_generation.py --model gpt2 --output_dir model1 --epoch 3 
  
  ```
  <p align="right">(<a href="#top">back to top</a>)</p>
  
  ### Inference
- To evaluate our model, we request you to download pretrained models from [here](https://drive.google.com/drive/folders/1ZK7jlUbwODJbpCS74mPiUIT6PQjcAyNv?usp=sharing). We found best score using *Model_1* therefore we suggest it for best results. Also we used two evaluation approches: [BLEU](https://github.com/mjpost/sacrebleu) and [BERTScore](https://github.com/Tiiiger/bert_score). One can choose a type *bert* or *bleu* by using `--score` argument. Also you can choose following arguments:
+To evaluate our model, we request you to download pretrained models ```generation_gpt2``` and ```generation_gptneo``` from [here](https://drive.google.com/drive/folders/1ZK7jlUbwODJbpCS74mPiUIT6PQjcAyNv?usp=sharing). We used two evaluation approches: [BLEU](https://github.com/mjpost/sacrebleu) and [BERTScore](https://github.com/Tiiiger/bert_score). One can choose a type *bert* or *bleu* by using `--score` argument. Also you can choose following arguments:
  
  ```
 --test_path, Path to test, default='Data/test.jsonl'
