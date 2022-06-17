@@ -20,7 +20,7 @@
 <!-- GETTING STARTED -->
 ## Getting Started
 
-We tried the fixed prompt LM tuning method and took aspect detection as a text generation task.
+We tried the fixed prompt LM tuning method and took aspect detection as a text generation task. As taking aspect detection as the text classification task didn't gave us desired results, we didn't include the script in the repository. 
 ### Prerequisites
 
 Python == 3.8
