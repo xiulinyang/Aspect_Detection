@@ -7,7 +7,7 @@ import nltk
 
 
 
-path = '/content/sample_data/train.csv'
+path = '/NER/Data/train.csv'
 df = pd.read_csv(path)
 df = df.dropna().reset_index()
 
