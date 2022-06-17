@@ -203,6 +203,11 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str, help="Options: 'neo' for GPT-neo & 'gpt2' for GPT-2")
+    parser.add_argument("--train_path", type=str, help="path to train jsonl file", default="data/train.jsonl")
+    parser.add_argument("--test_path", type=str, help="path to test jsonl file", default="data/test.jsonl")
+    parser.add_argument("--val_path", type=str, help="path to validation jsonl file", default="data/dev.jsonl")
+    parser.add_argument("--batch_size", type=int, help="batch_size for training", default=4)
+    parser.add_argument("--epochs", type=int, help="number of epochs for training", default=10)
     args = parser.parse_args()
 
     SEED = 42
@@ -217,7 +222,7 @@ if __name__ == "__main__":
                       "sep_token": "<|SEP|>"}
     SPECIAL_KEYS = list(SPECIAL_TOKENS.values())
 
-    MAXLEN = 200
+    MAXLEN = args.epochs
     MODEL_SAVE_PATH = "models"
 
     DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -236,21 +241,17 @@ if __name__ == "__main__":
     tokenizer.add_special_tokens(SPECIAL_TOKENS)
 
     UNFREEZE_LAST_N = 6
-    BATCH_SIZE = 4
+    BATCH_SIZE = args.batch_size
     BATCH_UPDATE = 2
     NTOKENS = 10
 
-    train_path = "data/train.jsonl"
-    val_path = "data/dev.jsonl"
-    test_path = "data/test.jsonl"
-
-    df = pd.read_json(train_path, lines=True)
+    df = pd.read_json(args.train_path, lines=True)
     train_X = df.values
 
-    df = pd.read_json(val_path, lines=True)
+    df = pd.read_json(args.val_path, lines=True)
     val_X = df.values
 
-    df = pd.read_json(test_path, lines=True)
+    df = pd.read_json(args.test_path, lines=True)
     test_X = df.values
 
 
