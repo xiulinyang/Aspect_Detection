@@ -41,8 +41,8 @@ pip install -r requirements.txt
 There are two options for Pretrained Models: GPT-2 and GPT-Neo. You can choose model type *GPT-2* or *GPT-Neo* using `--model` argument. Also we include the following arguments:
 
 ```
-  --train_path, default='Data/train.jsonl
-  --val_path, default='Data/dev.jsonl
+  --train_path, default='Data/train.jsonl'
+  --val_path, default='Data/dev.jsonl'
   --output_dir, default = 'model1'
   --model, default = 'gpt2', choices = 'gpt2' or 'gptneo'
   --epoch, default = 5
