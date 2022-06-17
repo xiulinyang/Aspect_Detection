@@ -43,26 +43,12 @@ There are two options for Pretrained Models: GPT-2 and GPT-neo. You can choose m
 ```
   --model_name, default="neo"
   --train_path, default="data/train.jsonl"
-  --val_path, default="data/dev.jsonl",
-  --batch_size, default=4,
-  --epochs, default=10,
+  --test_path, default="data/test.jsonl"
   --n_gen, default=15,
-  --test_path, default="data/test.jsonl",
-  --checkpoint, default="models/gpt2.pth",
-  --model_name, default="gpt2"
  ```
-  **Training Example:**
+  **Example:**
  ```
-python tuning_free_prompt.py --model_name "neo" --train_path "data/train.jsonl" --val_path "data/dev.jsonl" --batch_size 4 --epochs 20
- 
- ```
- 
- <p align="right">(<a href="#top">back to top</a>)</p>
- 
- 
- **Test Example:**
- ```
-python test.py --model_name "neo" --test_path "data/test.jsonl" --checkpoint "models/gpt2.pth" --n_gen 20
+python tuning_free_prompt.py --model_name "neo" --train_path "data/train.jsonl" --test_path "data/test.jsonl" --n_gen 20
  
  ```
  
